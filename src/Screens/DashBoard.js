@@ -16,7 +16,7 @@ function DashBoard (props) {
             ]
         });
         props.navigation.dispatch(resetNav);
-        props.dispatch(resetAll);
+        props.dispatch(resetAll());
 
     };
 
