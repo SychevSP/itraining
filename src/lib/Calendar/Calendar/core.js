@@ -17,22 +17,26 @@ export default class CalendarCore extends React.Component {
         this.props.onPress ({eventDate, eventIndex});
     };
 
+    /*
+     * This function creates a 2d array of days to render in calendar
+     * The days are arranged in 2d by rows and columns as they will be rendered in Calendar
+     * The first day is always monday. The last day is always sunday
+     * The calender renders one month plus days before and days after to achieve proper alignment
+     */
     createCalendar = () => {
-
-        //console.log(this.props);
 
         const firstActiveDate = this.props.firstActiveDate; //first date of month
         const firstDate = utils.getFirstDateCal(firstActiveDate); //first date shown in calendar
 
-        //Первое пороговое значение - количество дней в предыдущем месяце
+        //first threshold - number of days in previous month to render
         const threshold1 = (firstActiveDate - firstDate) / utils.MS_IN_DAY;
-        //Количество дней в этом месяце
+        //number of days in this month to render
         const activeDays = utils.getDaysInMonth(firstActiveDate);
 
-        //Второе пороговое значение - количество дней в предыдущем и в этом месяце
+        //second threshold = number of days in previous and this month to render
         const threshold2 = threshold1 + activeDays;
 
-        //Заранее задаем длину массива
+        //The total number of days to render (prev + this + next)
         const rem = threshold2 % 7;
         const arrLength = rem ? threshold2 + (7 - rem) : threshold2;
 
@@ -125,12 +129,13 @@ export default class CalendarCore extends React.Component {
             }, this.calendarDays);
         }
 
-        //Если заданы первая и последняя даты для выбора, то делаем остальные дни недоступными
+        /*
         if (this.props.firstSelectableDate && this.props.lastSelectableDate) {
             this.calendarDays.map(e => {
 
             })
         }
+        */
 
         //Заполняем массив для рендера
         this.calendarCells = this.calendarDays.map(e => (<CalendarCell {...e}/>));

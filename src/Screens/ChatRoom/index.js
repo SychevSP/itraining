@@ -1,22 +1,19 @@
 import React from 'react';
-import { Text, View, FlatList, TouchableOpacity, TextInput, Keyboard, KeyboardAvoidingView, StyleSheet, Dimensions, Image, Platform } from 'react-native';
+import { Text, View, FlatList, TouchableOpacity, TextInput, Keyboard, KeyboardAvoidingView, StyleSheet, Dimensions, Image } from 'react-native';
 import { connect } from 'react-redux';
-import firebase from '/firebaseInit';
-import { printDate, printTime } from 'lib/Calendar/utils'
-import BcgIMG from 'Components/BcgIMG'
 
-const TAB_BAR_HEIGHT = 49; //из кода библиотеки
-//const APPBAR_HEIGHT = Platform.OS === 'ios' ? 44 : 56;
-//const STATUSBAR_HEIGHT = Platform.OS === 'ios' ? 20 : 0;
+import firebase from '/firebaseInit';
+import { printDate, printTime } from 'lib/Calendar/utils';
+import BcgIMG from 'Components/BcgIMG';
+import styles from './styles';
+
 const SQUARE_SIDE = 40;
 const INPUT_WIDTH = Dimensions.get('window').width - SQUARE_SIDE;
-const FONT_SIZE = 16;
 
 class ChatRoom extends React.Component {
 
     messages = null;
     messagesHeight = [];
-    lastMessageHeight = 0;
 
     state = {
         loaded: false,
@@ -26,18 +23,6 @@ class ChatRoom extends React.Component {
     };
 
     componentDidMount() {
-
-        //Следим за клавой
-        //this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
-        //this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide);
-
-        //Прокурчиваем сообщения до конца
-        /*this.messageList.scrollToIndex({
-            animated: false,
-            index: this.messages.length,
-            viewOffset: 0,
-            viewPosition: 1,
-        });*/
 
         //Проверяем соединение с интернетом
         firebase.database().ref(".info/connected")
@@ -55,10 +40,6 @@ class ChatRoom extends React.Component {
     }
 
     componentWillUnmount() {
-        //Клава
-        //this.keyboardDidShowListener.remove();
-        //this.keyboardDidHideListener.remove();
-        //База данных
         firebase.database().ref(".info/connected").off();
         firebase.database().ref('chatRooms').off();
     }
@@ -71,28 +52,12 @@ class ChatRoom extends React.Component {
         return offset;
 
     };
-    /*componentDidUpdate () {
-        if (this.messages) {
-            const lastIndex = this.messagesHeight.length - 1;
-            this.messagesOffset = this.messagesHeight.reduce((ac, e, i) => {
-                //Добавляем новый элемент в массив смещений
-                const cumHeight = ac[i] + e;
-                //Для последнего индекс смещение не требуется
-                return i === lastIndex ? ac : (ac.push(cumHeight), ac);
-            }, [0]);
-            console.log('in CDU');
-            console.log('this.messagesHeight');
-            console.log(this.messagesHeight);
-            console.log('this.messagesOffset');
-            console.log(this.messagesOffset);
-            this.messageList.scrollToEnd({animated: false});
-        }
-    }*/
+
 
     subscribeToMessages = (chatKey) => {
         firebase.database().ref('chatRooms').child(chatKey).child('messages').orderByChild('timeStamp').on('value', snapshot => {
             const messages = snapshot.val();
-           // console.log('in callback');
+
             //Преобразуем полученные данные в массив сообщений
             const messagesArr = [];
             var i = 0;
@@ -102,45 +67,23 @@ class ChatRoom extends React.Component {
                 i++;
             }
             this.messages = messagesArr;
+
             //Загрузка завершена
-            //console.log('Сообщения загружены');
             this.setState({loaded: true});
         });
     };
 
-    _keyboardDidShow = (e) => {
-        /*console.log(this.props.navigation);
-        console.log(this.props.navigation.state);
-        console.log(e);*/
-        //console.log('KB did show firing. Wrong!!!');
-        //this.setState({KBHeight: e.height - TAB_BAR_HEIGHT});
-        console.log('In _keyboardDidShow', e);
-        console.log('DimensionsY:', Dimensions.get('window').height);
-    };
-
-    _keyboardDidHide = () => {
-        this.setState({KBHeight: 0});
-    };
-
-    //Передлать. Исопльзовать индекс вместо push
-    _addLayout = (event, index) => {
-        this.messagesHeight[index] = event.nativeEvent.layout.height;
-    };
 
     _renderItem = ({item, index}) => {
         return(
             <MessageBlob
                 {...item}
                 isMine = {item.uid === this.props.uid}
-                addLayout = {this._addLayout}
+                //addLayout = {this._addLayout}
                 index = {index}
                 />
     )};
 
-    _getItemLayout = (data, index) => ({
-        length: this.messagesHeight[index],
-        offset: this.calcOffset[index],
-        index});
 
     sendMessage = (text) => {
         let chatKey;
@@ -164,6 +107,8 @@ class ChatRoom extends React.Component {
         });
     };
 
+    //account for the header in KeyboardAvoidingView
+    //By default the KeyboardAvoidingView asumes there is no other view above it
     _containerOnLayout = () => {
         this.containerView.measure((x, y, width, height, pageX, pageY) => this.setState({KBOffset: pageY}));
     };
@@ -179,7 +124,6 @@ class ChatRoom extends React.Component {
                     />
             );
         }
-        //keyboardVerticalOffset = {this.state.KBOffset}
 
         return (
 
@@ -199,9 +143,6 @@ class ChatRoom extends React.Component {
                     ref = {input => this.messageList = input}
                     data = {this.messages}
                     renderItem = {this._renderItem}
-                    //getItemLayout = {this._getItemLayout}
-                    //onContentSizeChange = {console.log('onContentSizeChange')}
-                    //initialScrollIndex = {this.messages ? this.messages.length - 1 : undefined}
                     />
 
                 <NewMessage send = {this.sendMessage}/>
@@ -266,7 +207,7 @@ function MessageBlob (props) {
     return(
         <View
             style ={[styles.message, additionalStyle]}
-            onLayout = {event => props.addLayout(event, props.index)}
+            //onLayout = {event => props.addLayout(event, props.index)}
             >
             <Text style = {styles.textUser}>{props.uid}</Text>
             <Text>{props.text}</Text>
@@ -275,50 +216,3 @@ function MessageBlob (props) {
     );
 }
 
-const styles = StyleSheet.create({
-    message: {
-        backgroundColor: 'beige',
-        width: '80%',
-        margin: 2,
-        borderRadius: FONT_SIZE / 2,
-        borderBottomWidth: 10,
-        borderBottomColor: 'beige',
-        padding: FONT_SIZE / 2,
-    },
-    myMessage: {
-        alignSelf: 'flex-start',
-        borderLeftWidth: 15,
-        borderLeftColor: 'transparent',
-        //paddingLeft: 4,
-    },
-    theirMessage: {
-        alignSelf: 'flex-end',
-        borderRightWidth: 15,
-        borderRightColor: 'lightgray',
-        paddingRight: 4,
-    },
-    sendButton: {
-        height: SQUARE_SIDE,
-        width: SQUARE_SIDE,
-        borderRadius: SQUARE_SIDE / 2,
-        borderColor: 'dodgerblue',
-        borderWidth: 2,
-        backgroundColor: 'dodgerblue'
-    },
-    inputBox: {
-        width: INPUT_WIDTH,
-        borderColor: 'dodgerblue',
-        backgroundColor: 'ivory',
-        borderRadius: FONT_SIZE / 2,
-        borderWidth: 2,
-        fontSize: FONT_SIZE,
-    },
-    textUser: {
-        textAlign: 'left',
-        color: 'green',
-    },
-    textDate: {
-        textAlign: 'right',
-        color: 'gray',
-    },
-});

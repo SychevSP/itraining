@@ -65,20 +65,3 @@ export function printTime (dateVal) {
 }
 
 
-/*export function createSchedule ({ initialDate, weekDays }) {
-    //Определяем какой день недели выбрал пользователь
-    const date = new Date (initialDate);
-    var weekDay = date.getDay();
-    //Превращаем в наш формат, где понедельник = 0
-    weekDay = weekDay ? weekDay - 1 : 6;
-
-    console.log ('analyzing engine');
-    console.log (weekDay);
-    console.log (weekDays);
-    //Расчет только для трех дней
-    return weekDays.map(e => {
-        var diff = e - weekDay;
-        if (diff < 0) diff = 7 + diff;
-        return initialDate + diff * MS_IN_DAY;
-    }).sort();
-}*/
